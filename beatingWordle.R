@@ -1,0 +1,117 @@
+####         setup          ####
+library(tidyverse)
+
+words <-read.csv("valid_solutions.csv")
+
+
+
+fiveLet <- words %>% 
+  mutate(let1 = str_sub(words$word, 1,1)) %>% 
+  mutate(let2 = str_sub(words$word, 2,2)) %>% 
+  mutate(let3 = str_sub(words$word, 3,3)) %>% 
+  mutate(let4 = str_sub(words$word, 4,4)) %>% 
+  mutate(let5 = str_sub(words$word, 5,5))
+
+alphabet <- c("a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z")
+
+myWord <- matrix(nrow = 26, ncol = 5)
+contain <- vector(length = 5, mode = "list")
+notContain <- vector(length = 26, mode = "list")
+notHere <- matrix(nrow = 26, ncol = 5)
+####      Input Info       ####
+# put greens here
+First <- ""
+Second <- ""
+Third <- ""
+Fourth <- ""
+Fifth <- ""
+
+# put yellows here
+yellow <- ""
+
+#put greys here
+grey <- ""
+
+# when a letter is correct but not in this spot
+notFirst <- ""
+notSecond <- ""
+notThird <- ""
+notFourth <- ""
+notFifth <- ""
+
+#
+####        run this        ####
+contain <-c(str_split(yellow,"",n=nchar(yellow), simplify = T))[1:5]
+contain[is.na(contain)] <- ""
+
+notContain <- c(str_split(grey,"",n=nchar(grey), simplify =T))[1:nchar(grey)]
+notContain[is.na(notContain)] <- ""
+
+notHere[,1] <- c(str_split(notFirst,"",n=nchar(notFirst), simplify = T))[1:26]
+notHere[,2] <- c(str_split(notSecond,"",n=nchar(notSecond), simplify = T))[1:26]
+notHere[,3] <- c(str_split(notThird,"",n=nchar(notThird), simplify = T))[1:26]
+notHere[,4] <- c(str_split(notFourth,"",n=nchar(notFourth), simplify = T))[1:26]
+notHere[,5] <- c(str_split(notFifth,"",n=nchar(notFifth), simplify = T))[1:26]
+notHere[is.na(notHere)] <- ""
+
+myWord[,1] <- if(First==""){alphabet}else{First}
+myWord[,2] <- if(Second==""){alphabet}else{Second}
+myWord[,3] <- if(Third==""){alphabet}else{Third}
+myWord[,4] <- if(Fourth==""){alphabet}else{Fourth}
+myWord[,5] <- if(Fifth==""){alphabet}else{Fifth}
+
+possibleWords <- fiveLet %>% 
+  filter(let1 %in% myWord[,1]) %>% 
+  filter(let2 %in% myWord[,2]) %>% 
+  filter(let3 %in% myWord[,3]) %>% 
+  filter(let4 %in% myWord[,4]) %>% 
+  filter(let5 %in% myWord[,5]) %>% 
+  filter(grepl(contain[1],word)) %>% 
+  filter(grepl(contain[2],word)) %>% 
+  filter(grepl(contain[3],word)) %>% 
+  filter(grepl(contain[4],word)) %>% 
+  filter(grepl(contain[5],word)) %>% 
+  filter(!(let1 %in% notContain)) %>% 
+  filter(!(let2 %in% notContain)) %>% 
+  filter(!(let3 %in% notContain)) %>% 
+  filter(!(let4 %in% notContain)) %>% 
+  filter(!(let5 %in% notContain)) %>% 
+  filter(!(let1 %in% notHere[,1])) %>% 
+  filter(!(let2 %in% notHere[,2])) %>% 
+  filter(!(let3 %in% notHere[,3])) %>% 
+  filter(!(let4 %in% notHere[,4])) %>% 
+  filter(!(let5 %in% notHere[,5]))
+
+allLetters <- matrix(nrow = 5*nrow(possibleWords), ncol = 1)
+
+allLetters[,1] <-c(possibleWords$let1,possibleWords$let2, possibleWords$let3, 
+               possibleWords$let4, possibleWords$let5)
+
+allLetters <- as.data.frame(allLetters) %>% 
+  group_by(V1) %>% 
+  summarize(count = n()) %>% 
+  rename(letter = V1)
+
+possibleWords$score <- score(possibleWords$word)
+
+possibleWords <- possibleWords %>%
+  arrange(-score)
+
+View(possibleWords)
+
+score <- function(x) {
+  i=1
+  score <- vector(length = length(x))
+  for(i in 1:length(x)) {
+    word <- x[i]
+    score[i] <- allLetters %>% 
+      filter(letter == substr(word,1,1)|
+               letter == substr(word,2,2)|
+               letter == substr(word,3,3)|
+               letter == substr(word,4,4)|
+               letter == substr(word,5,5)) %>% 
+      select(count) %>% 
+      sum()
+  }
+  score
+}

@@ -1,0 +1,13 @@
+name: a4-climate-loganmckerlich
+title: a4-climate-loganmckerlich
+username:
+account: loganmckerlich
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3731962
+bundleId: 4297755
+url: https://loganmckerlich.shinyapps.io/a4-climate-loganmckerlich/
+when: 1614817722.30784
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: plot_guide.R
